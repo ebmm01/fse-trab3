@@ -25,6 +25,12 @@
                 :rules="[v => !!v || 'O nome não pode estar em branco']"
                 label="Nome dispositivo saida"
                 required />
+            <v-select
+                v-model="type"
+                :items="items"
+                item-text="text"
+                item-value="value"
+                label="Tipo" />
         </v-form>
         <template v-slot:footer>
             <v-btn
@@ -65,6 +71,11 @@ export default {
             comodo: "",
             entrada: "",
             saida: "",
+            type: "",
+            items: [
+                { text: 'Energia', value: 'energia' },
+                { text: 'Bateria', value: 'bateria' },
+            ]
         }
     },
     components: {
@@ -81,6 +92,7 @@ export default {
                     entrada: this.entrada,
                     saida: this.saida,
                     id: this.deviceId,
+                    type: this.type,
                     status: 1
                 })
         }

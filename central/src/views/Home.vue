@@ -72,17 +72,21 @@
 import NewClientDialog from '../components/dialogs/NewClientDialog.vue'
 import ButtonWithTooltip from '../components/utils/ButtonWithTooltip.vue'
 
+const topicName = `fse2020/${process.env.VUE_APP_MATRICULA}`
+
 export default {
     name: 'Home',
     data() {
         return {
             newClientDialog: false,
             headers: [
-                {
-                    text: 'Id',
-                    value: 'id'
-                },
+                { text: 'Id', value: 'id' },
                 { text: 'Cômodo', value: 'comodo' },
+                { text: 'Tipo', value: 'type' },
+                { text: 'Entrada', value: 'entrada' },
+                { text: 'Saida', value: 'saida' },
+                { text: 'Temperatura', value: 'temperatura' },
+                { text: 'Umidade', value: 'umidade' },
                 { text: 'Status', value: 'status' },
                 { text: 'Ações', value: 'actions' }
             ],
@@ -99,19 +103,45 @@ export default {
         }
     },
     mqtt: {
-        'fse2020/150009011/dispositivos/+': function(val) {
+        [`${topicName}/dispositivos/#`]: function(val, topic) {
             const msg = JSON.parse(new TextDecoder().decode(val))
 
-            const elem = this.esps.find(elem => elem.id === msg.id)
-            if (!elem)
-                this.espsSol.push({id: msg.id})
-            else  {
-                const updatedElem = {...elem}
-                updatedElem.status = 1
-                this.esps.splice(this.esps.findIndex(elem => elem.id === msg.id), 1, updatedElem)
-                console.log('Updated!!')
+            if (msg.id && msg.event !== "ADDED_DEVICE") {
+                const elem = this.esps.find(elem => elem.id === msg.id) || this.espsSol.find(elem => elem.id === msg.id)
+                if (!elem)
+                    this.espsSol.push({id: msg.id})
+                else  {
+                    const updatedElem = {...elem}
+                    updatedElem.status = 1
+                    this.esps.splice(this.esps.findIndex(elem => elem.id === msg.id), 1, updatedElem)
+                    console.log('Updated!!')
+                    console.log(topic)
+                    console.log(updatedElem)
+                    
+                    setTimeout(() => {
+                        this.$mqtt.publish(topic, JSON.stringify({ 
+                            event: "ADDED_DEVICE",
+                            room: updatedElem.comodo
+                        }))
+                    }, 2000)
+                }
             }
         },
+        [`${topicName}/+/#`] (val, topic) {
+            const topicName = topic.split("/")[2]
+            const isDevice = topicName === 'dispositivos'
+            const msg = JSON.parse(new TextDecoder().decode(val))
+            
+            const elem = this.esps.find(elem => elem.comodo === topicName)
+
+            if (!isDevice && elem) {
+
+                elem[topic.split("/")[3]] = msg[topic.split("/")[3]]
+
+                this.esps.splice(this.esps.findIndex(elem => elem.comodo === topicName), 1, elem)
+
+            }
+        }
     },
     components: {
         NewClientDialog,
@@ -126,11 +156,18 @@ export default {
             this.esps.push(val)
             this.currDeviceId = ""
             this.newClientDialog = false
-            this.espsSol.splice(this.espsSol.findIndex(elem => elem.id === val.id), 1)
+            this.espsSol = this.espsSol.filter(elem => elem.id !== val.id)
+            console.log(`${topicName}/dispositivos/${val.id}`)
+            this.$mqtt.publish(`${topicName}/dispositivos/${val.id}`, JSON.stringify({ 
+                event: "ADDED_DEVICE",
+                room: val.comodo
+            }))
         }
     },
     created() {
-        this.$mqtt.subscribe('fse2020/150009011/dispositivos/param')
+        console.log(topicName)
+        this.$mqtt.subscribe(`${topicName}/dispositivos/#`)
+        this.$mqtt.subscribe(`${topicName}/+/#`)
     }
 }
 </script>
