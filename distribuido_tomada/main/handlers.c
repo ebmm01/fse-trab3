@@ -17,6 +17,7 @@
 #include "temperatures.h"
 #include "mqtt.h"
 #include "cJSON.h"
+#include "led.h"
 
 char roomName[30];
 
@@ -38,5 +39,12 @@ void apply_handler(char* msg) {
         strncpy(roomName, room_json->valuestring, strlen(room_json->valuestring));
 
         xTaskCreate(&send_temperature,  "Handler de envio de temperatura", 4096, NULL, 1, NULL);
-    } 
+    }
+    else if (strcmp(event_json->valuestring, UPDATE_OUTPUT_SENSOR) == 0) {
+        cJSON* output_sensor_json = NULL;
+
+        output_sensor_json = cJSON_GetObjectItem(json, "value");
+        
+        set_led_state(output_sensor_json->valueint);
+    }
 }

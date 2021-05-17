@@ -40,8 +40,7 @@ void send_temperature(void * params) {
 
         publish(temperature_topic_name, temperature_json);
         publish(humidity_topic_name, humidity_json);
-        
-        printf("Temperatura:: %i, humidade:: %i \n", temperature, humidity);
+
         vTaskDelay( xDelay );
     }
 }
