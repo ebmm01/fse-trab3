@@ -1,5 +1,5 @@
 <template>
-    <v-row>
+    <v-row class="mt-5">
         <v-col
             cols="12"
             sm="9"
@@ -18,6 +18,38 @@
                 :items="esps"
                 :items-per-page="esps.length"
                 class="elevation-1">
+                <template v-slot:item.entrada="{ item }">
+                    <div class="d-flex align-center">
+                        {{ item.entrada }}
+                        <v-switch
+                            class="ml-3"
+                            v-model="item.entradaValue"
+                            inset
+                            readonly
+                            :label="item.entradaValue ? 'on' : 'off'"/>
+                    </div>
+                </template>
+                <template v-slot:item.saida="{ item }">
+                    <div class="d-flex align-center">
+                        {{ item.saida }}
+                        <v-switch
+                            class="ml-3"
+                            v-model="item.saidaValue"
+                            inset
+                            @change="updateSaidaValue(item)"
+                            :label="item.saidaValue ? 'on' : 'off'"/>
+                    </div>
+                </template>
+                <template v-slot:item.temperatura="{ item }">
+                    <div class="d-flex align-center">
+                        {{ formatOutput(item.temperatura, 'temp') }}
+                    </div>
+                </template>
+                <template v-slot:item.umidade="{ item }">
+                    <div class="d-flex align-center">
+                        {{ formatOutput(item.umidade, 'umidade') }}
+                    </div>
+                </template>
                 <template v-slot:item.actions="{ item }">
                     <button-with-tooltip
                         large 
@@ -87,7 +119,6 @@ export default {
                 { text: 'Saida', value: 'saida' },
                 { text: 'Temperatura', value: 'temperatura' },
                 { text: 'Umidade', value: 'umidade' },
-                { text: 'Status', value: 'status' },
                 { text: 'Ações', value: 'actions' }
             ],
             esps: [ ],
@@ -112,12 +143,13 @@ export default {
                     this.espsSol.push({id: msg.id})
                 else  {
                     const updatedElem = {...elem}
+
                     updatedElem.status = 1
+                    updatedElem.saidaValue = 0
+                    updatedElem.entradaValue = 0
+
                     this.esps.splice(this.esps.findIndex(elem => elem.id === msg.id), 1, updatedElem)
-                    console.log('Updated!!')
-                    console.log(topic)
-                    console.log(updatedElem)
-                    
+                       
                     setTimeout(() => {
                         this.$mqtt.publish(topic, JSON.stringify({ 
                             event: "ADDED_DEVICE",
@@ -139,7 +171,6 @@ export default {
                 elem[topic.split("/")[3]] = msg[topic.split("/")[3]]
 
                 this.esps.splice(this.esps.findIndex(elem => elem.comodo === topicName), 1, elem)
-
             }
         }
     },
@@ -153,15 +184,33 @@ export default {
             this.newClientDialog = true
         },
         addDevice(val) {
+            val.saidaValue = 0
+            val.entradaValue = 0
+
             this.esps.push(val)
+            
             this.currDeviceId = ""
             this.newClientDialog = false
+
             this.espsSol = this.espsSol.filter(elem => elem.id !== val.id)
-            console.log(`${topicName}/dispositivos/${val.id}`)
+        
+        
             this.$mqtt.publish(`${topicName}/dispositivos/${val.id}`, JSON.stringify({ 
                 event: "ADDED_DEVICE",
                 room: val.comodo
             }))
+        },
+        updateSaidaValue(item) {
+            this.$mqtt.publish(`${topicName}/dispositivos/${item.id}`, JSON.stringify({ 
+                event: "UPDATE_OUTPUT_SENSOR",
+                value: item.saidaValue
+            }))
+        },
+        formatOutput(value, type) {
+            if (type === 'temp') 
+                return `${(+value/10)} ºC`
+            else
+                return `${(+value/10)}%`
         }
     },
     created() {
