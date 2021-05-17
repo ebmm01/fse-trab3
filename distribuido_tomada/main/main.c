@@ -4,17 +4,26 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
-#include "dht.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
 #include "freertos/semphr.h"
 #include "wifi.h"
+#include "mqtt.h"
 
 #define LED_1 2
 
 xSemaphoreHandle conexaoWifiSemaphore;
+xSemaphoreHandle conexaoMQTTSemaphore;
+
+void conectado_wifi(void * params) {
+    while(true) {
+        if (xSemaphoreTake(conexaoWifiSemaphore, portMAX_DELAY)) {
+            mqtt_start();
+        }
+    }
+}
 
 void app_main()
 {
@@ -39,9 +48,8 @@ void app_main()
         .hpoint = 0
     };
     ledc_channel_config(&channel_config);
-    
+
     const TickType_t xDelay = 500 / portTICK_PERIOD_MS;
-    int16_t humidity, temperature;
     
     ledc_fade_func_install(0);
 
@@ -54,16 +62,17 @@ void app_main()
     ESP_ERROR_CHECK(ret);
 
     conexaoWifiSemaphore = xSemaphoreCreateBinary();
-
-    
+    conexaoMQTTSemaphore = xSemaphoreCreateBinary();
     wifi_start();
+
+    xTaskCreate(&conectado_wifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
+    //xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
+
 
     while(true)
     {
-        dht_read_data(DHT_TYPE_DHT11, 4, &humidity, &temperature);
         ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0, 1000, LEDC_FADE_WAIT_DONE);
         ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 255, 1000, LEDC_FADE_WAIT_DONE);
         vTaskDelay( xDelay );
-        printf("Temperatura:: %i, humidade:: %i \n", temperature, humidity);
     }
 }

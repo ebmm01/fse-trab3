@@ -18,3 +18,12 @@ menu "Configuração do Wifi Configuration"
         help
             Configure o valor máximo de tentativas de conexão.
 endmenu
+
+menu "Configuração do Broker MQTT"
+
+    config ESP_MQTT_BROKER
+        string "Endereço do Broker MQTT"
+        default "mqtt://mqtt.eclipseprojects.io:1883"
+        help
+            Endereço do Broker MQTT.
+endmenu

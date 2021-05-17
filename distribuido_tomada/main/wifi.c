@@ -102,6 +102,14 @@ void wifi_start() {
     vEventGroupDelete(s_wifi_event_group);
 }
 
+uint8_t *get_mac_address_from_esp() {
+    uint8_t mac[6];
+
+    esp_wifi_get_mac(WIFI_MODE_STA, mac);
+
+    return mac;
+}
+
 void wifi_stop()
 {
     esp_wifi_stop();
