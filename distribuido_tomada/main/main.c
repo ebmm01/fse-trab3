@@ -12,6 +12,7 @@
 #include "wifi.h"
 #include "mqtt.h"
 #include "led.h"
+#include "button.h"
 
 xSemaphoreHandle conexaoWifiSemaphore;
 xSemaphoreHandle conexaoMQTTSemaphore;
@@ -26,6 +27,7 @@ void conectado_wifi(void * params) {
 
 void app_main()
 {
+    init_button();
     init_led();
 
     // Inicializa o NVS
@@ -42,5 +44,4 @@ void app_main()
     wifi_start();
 
     xTaskCreate(&conectado_wifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
-    //xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
 }
