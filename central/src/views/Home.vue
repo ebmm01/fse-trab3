@@ -167,8 +167,11 @@ export default {
             const elem = this.esps.find(elem => elem.comodo === topicName)
 
             if (!isDevice && elem) {
-
-                elem[topic.split("/")[3]] = msg[topic.split("/")[3]]
+                if (topic.split("/")[3] === 'estado') {
+                    elem['entradaValue'] = +msg['entradaState']
+                }
+                else 
+                    elem[topic.split("/")[3]] = msg[topic.split("/")[3]]
 
                 this.esps.splice(this.esps.findIndex(elem => elem.comodo === topicName), 1, elem)
             }
