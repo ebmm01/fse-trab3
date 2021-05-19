@@ -8,6 +8,7 @@
 
       </v-container>
     </v-main>
+    <notifications position="top center"/>
   </v-app>
 </template>
 
