@@ -47,4 +47,7 @@ void apply_handler(char* msg) {
         
         set_led_state(output_sensor_json->valueint);
     }
+    else if (strcmp(event_json->valuestring, RESET_DEVICE) == 0) {
+        esp_restart();
+    }
 }

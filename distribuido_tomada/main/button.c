@@ -48,8 +48,6 @@ void trataInterrupcaoBotao(void *params)
                 char state_json[65];
 
                 sprintf(state_json, "{\"entradaState\": \"%d\"}", button_state);
-                
-                printf("PUBLICAND:: %s || %s \n", state_topic_name, state_json);
                 publish(state_topic_name, state_json);
 
                 // Habilitar novamente a interrupção

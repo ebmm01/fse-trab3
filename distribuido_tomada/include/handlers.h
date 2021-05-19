@@ -3,6 +3,7 @@
 
 #define ADDED_DEVICE "ADDED_DEVICE"
 #define UPDATE_OUTPUT_SENSOR "UPDATE_OUTPUT_SENSOR"
+#define RESET_DEVICE "RESET_DEVICE"
 
 extern char roomName[30];
 
