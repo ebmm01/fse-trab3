@@ -74,7 +74,6 @@ export default {
             type: "",
             items: [
                 { text: 'Energia', value: 'energia' },
-                { text: 'Bateria', value: 'bateria' },
             ]
         }
     },

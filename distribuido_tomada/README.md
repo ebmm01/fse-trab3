@@ -9,6 +9,8 @@ O objetivo deste trabalho é criar um sistema distribuído de automação reside
 
 ## Compilação e utilização
 
+### Compilação
+
 Primeiramente tenha a certeza de ter o idf instalado na sua máquina. Em seguida, na raiz da pasta `distribuido_tomada/`. Depois configure as varáveis de ambiente necessárias e faça o build do projeto:
 
 > Para o menuconfig:
@@ -33,3 +35,7 @@ Caso queria monitorar a placa, rode o seguinte comando:
 $ idf.py -p /dev/ttyUSB0 monitor
 ```
 Pronto, todo o resto deve rodar de forma automática. Para simular o alteração na entrada, apenas pressione o botão de boot. 
+
+### Utilização 
+
+Tenha a certeza de ter um Sensor do tipo DHT11 conectado na GPIO 4.
